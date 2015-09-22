@@ -58,6 +58,7 @@ double compute_pi_leibniz(size_t n)
 	return sum * 4.0;
 }
 
+
 double compute_pi_leibniz_avx(size_t n)
 {
 	double pi = 0.0;
@@ -83,9 +84,9 @@ double compute_pi_leibniz_avx(size_t n)
 }
 double compute_pi_euler(size_t n)
 {
-	double tmp = 0.0;
-	for(size_t i = 1 ; i < n ; i++){
-		tmp += 6 * ( 1 / pow(i,2) ); 
+	size_t tmp = 0.0;
+	for(double i = 1 ; i < n ; i++){
+		tmp += 6 / i * i; 
 	}
 	return sqrt(tmp);
 }
@@ -110,6 +111,75 @@ double compute_pi_euler_avx(size_t n)
         pi += tmp[0] + tmp[1] + tmp[2] + tmp[3];
 
         return sqrt( pi );
+}
+
+double compute_pi_euler2(size_t n)
+{
+	double tmp, ntmp;
+	double pi = 0.0;
+	double i = n;
+	pi  = i / (2 * i + 1);
+	for(i= n - 1; i > 1 ;){
+		tmp = pi;
+		i--;
+		ntmp = i / (2 * i + 1);
+		pi = (2 + tmp)*ntmp;
+	}
+
+	return pi +2;
+}
+
+
+double compute_pi_euler_num1()
+{
+	int base = 10000;
+	int n = 8400;
+	int i;
+	int temp;
+	int out;
+	int denom;
+	int numerator[8401]; 
+
+	for( i = 0 ; i < n ; i++ ) {
+    	numerator[i] = base / 5;
+  	}
+
+  	out = 0;
+  	for( n = 8400 ; n > 0 ; n -= 14 ) {
+    	temp = 0;
+	    for( i = n - 1 ; i > 0 ; i-- ) {
+	      	denom = 2 * i - 1;
+	      	temp = temp * i + numerator[i] * base;
+	      	numerator[i] = temp % denom;
+	      	temp /= denom;
+	    }
+    printf("%04d", out + temp / base);
+    out = temp % base;
+  	}
+  	return 0 ;
+}
+
+double compute_pi_euler_num2(){
+	int nume[52514];
+	int i;
+	int n;
+	int carry = 0;
+	int digit;
+	int base = 10000;
+	int denom;
+	int first = 0;
+	for( n = 52500 ; n > 0 ; n -= 14 ) {
+	    carry %= base;
+	    digit = carry;
+	    for( i = n - 1 ; i > 0 ; --i ) {
+	      denom = 2 * i - 1;
+	      carry = carry * i + base * (first?nume[i]:(base/5));
+	      nume[i] = carry % denom;
+	      carry /= denom;
+	    }
+	    first = printf("%04d", digit + carry / base);
+  	}
+  	return 0;
 }
 
 // Calculate 95% confidence interval
@@ -143,6 +213,7 @@ double compute_ci(double *min, double *max, double data[SAMPLE_SIZE])
 	return mean;
 }
 
+
 int main(int argc, char* argv[])
 {
 	unsigned int operation = atoi(argv[1]);
@@ -156,7 +227,6 @@ int main(int argc, char* argv[])
 	char method_name[32];
 	char time_filename[32];
 	char error_filename[32];
-
 	switch(operation) {
 		case 0:
 			compute_pi = &compute_pi_baseline;
@@ -193,6 +263,12 @@ int main(int argc, char* argv[])
 			strcpy(method_name, "compute_pi_euler_avx");
 			strcpy(time_filename, "time_euler_avx.txt");
 			strcpy(error_filename, "error_euler_avx.txt");
+			break;
+		case 6:
+			compute_pi = &compute_pi_euler2;
+			strcpy(method_name, "compute_pi_euler2_avx");
+			strcpy(time_filename, "time_euler2.txt");
+			strcpy(error_filename, "error_euler2.txt");
 			break;
 		default:
 			break;
