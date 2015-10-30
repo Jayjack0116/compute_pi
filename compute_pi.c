@@ -96,21 +96,21 @@ double compute_pi_euler_avx(size_t n)
 	double pi = 0.0;
 	register __m256d ymm0, ymm1, ymm2, ymm3;
 	ymm0 = _mm256_setzero_pd();
-        ymm1 = _mm256_set1_pd(1.0);
-        ymm2 = _mm256_set1_pd(6.0);
+    ymm1 = _mm256_set1_pd(1.0);
+    ymm2 = _mm256_set1_pd(6.0);
 
-        for (int i = 0; i <= n - 4; i += 4) {
-                ymm3 = _mm256_set_pd(i, i + 1.0, i + 2.0, i + 3.0);
-                ymm3 = _mm256_mul_pd(ymm3, ymm3);
-                ymm3 = _mm256_div_pd(ymm1, ymm3);
-                ymm3 = _mm256_mul_pd(ymm2, ymm3);
-                ymm0 = _mm256_add_pd(ymm0, ymm3);
-        }
-        double tmp[4] __attribute__((aligned(32)));
-        _mm256_store_pd(tmp, ymm0);
-        pi += tmp[0] + tmp[1] + tmp[2] + tmp[3];
+    for (int i = 0; i <= n - 4; i += 4) {
+        ymm3 = _mm256_set_pd(i, i + 1.0, i + 2.0, i + 3.0);
+        ymm3 = _mm256_mul_pd(ymm3, ymm3);
+        ymm3 = _mm256_div_pd(ymm1, ymm3);  
+        ymm0 = _mm256_add_pd(ymm0, ymm3);
+    }
+    ymm3 = _mm256_mul_pd(ymm2, ymm0);
+    double tmp[4] __attribute__((aligned(32)));
+    _mm256_store_pd(tmp, ymm0);
+    pi += tmp[0] + tmp[1] + tmp[2] + tmp[3];
 
-        return sqrt( pi );
+    return sqrt( pi );
 }
 
 double compute_pi_euler2(size_t n)
@@ -125,7 +125,6 @@ double compute_pi_euler2(size_t n)
 		ntmp = i / (2 * i + 1);
 		pi = (2 + tmp)*ntmp;
 	}
-
 	return pi +2;
 }
 
@@ -159,28 +158,27 @@ double compute_pi_euler_num1()
   	return 0 ;
 }
 
-double compute_pi_euler_num2(){
-	int nume[52514];
-	int i;
-	int n;
-	int carry = 0;
-	int digit;
-	int base = 10000;
-	int denom;
-	int first = 0;
-	for( n = 52500 ; n > 0 ; n -= 14 ) {
-	    carry %= base;
-	    digit = carry;
-	    for( i = n - 1 ; i > 0 ; --i ) {
-	      denom = 2 * i - 1;
-	      carry = carry * i + base * (first?nume[i]:(base/5));
-	      nume[i] = carry % denom;
-	      carry /= denom;
-	    }
-	    first = printf("%04d", digit + carry / base);
-  	}
-  	return 0;
-}
+// double compute_pi_euler_num2(){
+// 	int nume[52514];
+// 	int i;
+// 	int n;
+// 	int carry = 0;
+// 	int digit;
+// 	int base = 10000;
+// 	int denom;
+// 	int first = 0;
+// 	for( n = 52500 ; n > 0 ; n -= 14 ) {
+// 	    carry %= base;
+// 	    digit = carry;
+// 	    for( i = n - 1 ; i > 0 ; --i ) {
+// 	      denom = 2 * i - 1;
+// 	      carry = carry * i + base * (first?nume[i]:(base/5));
+// 	      nume[i] = carry % denom;
+// 	      carry /= denom;
+// 	    }
+//   	}
+//   	return 0;
+// }
 
 // Calculate 95% confidence interval
 // store the interval [min, max] in the first two parameters
